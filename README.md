@@ -11,8 +11,8 @@ This results in a 90-95% accuracy for a bundle of 60-70 straws, and upto 100% fo
 
 Proposed solution for best-in-class accuracy:
 Implementer: Convolutional Neural Network
-1. The script would require training a CNN for edge detection. But since it is not feasible to 'create' the huge dataset it requires, in such a time, it could not be prototyped to submit before 8th March.
+1. The script would require training a CNN for edge detection. But since it is not feasible to create the huge "dataset" it requires, in such a time to train the network. Hence,it could not be prototyped to submit before 8th March.
 2. The CNN trained would generate excellent edge detected output, and can be directly used to count circles.
 
-The only problem with standalone filters is that they are 'blind'. They don't see the image, but are plain Mathematical transforms. CNNs when implemented, can identify the required regions of interests.
+The only problem with standalone filters is that they are 'blind'. They don't see the image, but are plain Mathematical transforms. CNNs when implemented, can identify the required regions of interests with greater accuracy.
 
