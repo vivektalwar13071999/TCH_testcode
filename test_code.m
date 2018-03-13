@@ -3,11 +3,12 @@
 % Image Pre-processing and plane trisection
 
 clc, clear;
-image = imread('3.jpg');
-%image = imresize(image, [1000, 1000]);
+image = imread('<image>.png');
+h = [-1, -1, -1, -1,-1;-1, -1, -1, -1,-1;-1, -1, 23.8, -1,-1;-1, -1, -1, -1,-1;-1, -1, -1, -1,-1];
+image = imfilter(image, h, 'conv');
 fudgeFactor = 0.9;
-se90 = strel('line', 6, 90);
-se0 = strel('line', 2, 0);
+se90 = strel('line', 2, 90);
+se0 = strel('line', 1, 0);
 %image = imsharpen(image, 'Amount', 2);
 rmat = image(:,:,1);
 gmat = image(:,:,2);
@@ -36,7 +37,7 @@ BWsdilb = imdilate(BWs, [se90 se0]);
 
 c=BWsdilr+BWsdilg+BWsdilb;
 c = ~c;
-detectCircles = @(x) imfindcircles(x,[30 100],'Sensitivity',0.85, 'EdgeThreshold',0.1, 'Method','PhaseCode', 'ObjectPolarity','Bright');
+detectCircles = @(x) imfindcircles(x,[10 25],'Sensitivity',0.84, 'EdgeThreshold',0.1, 'Method','PhaseCode', 'ObjectPolarity','Bright');
 [centers, radii, metric] = detectCircles(c);
 
 %% Mark circles on the image
