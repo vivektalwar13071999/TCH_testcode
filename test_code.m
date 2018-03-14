@@ -59,10 +59,4 @@ timeElapsed=toc;
 fileID = fopen('log.txt','wt')
 fprintf(fileID,'Total Straws: %d \n',number);
 fprintf(fileID,'\nExecution Time in Program: %d seconds',timeElapsed);
-fprintf(fileID,'\nIndex \t Center pixel value \t Radii(pixels)');
-fprintf(fileID,'\n---------------------------------------------');
-for k = 1:length(centers)
-    fprintf(fileID,'\nStraw %d:\t%f\t%f',k,centers(k,1), radii(k,1));
-    
-end
 fclose(fileID);
