@@ -33,7 +33,6 @@ BWsdilg = imdilate(BWs, [se90 se0]);
 BWsdilg = medfilt2(BWsdilg);
 
 %figure, imshowpair(BWsdilg, BWs, 'montage'), title('dilated G gradient mask');
-
 %%bmat sobel
 [~, threshold] = edge(bmat, 'sobel');
 BWs = edge(bmat,'sobel', threshold * fudgeFactor);
@@ -53,7 +52,8 @@ c=~c;
 h = viscircles(centers,radii);
 disp(size(centers));
 number=number+length(centers);
-timeElapsed=toc;
+timeElapsed=toc; %Execution Time Calculation
+%FileCreation
 fileID = fopen('strawcounter.txt','w')
 fprintf(fileID,'The number of straws counted: %d \n',number);
 fprintf(fileID,'\nExecution Time in Program: %d \n',timeElapsed);
