@@ -1,61 +1,75 @@
 
+clc, clear;
+
+
+connector on 12345678;
+m = mobiledev;
+m.PositionSensorEnabled = 1;
+m.Logging = 1;
+pause(3);
+m.Logging = 0;
+[lat, lon] = poslog(m)
+
 %% Clear environment vars
 % Image Pre-processing and plane trisection
-
 tic;
-clear all;
-close all; 
+url = 'http://192.168.43.1:8080/photo.jpg';
+urlwrite('http://192.168.43.1:8080/shot.jpg', 'shot.jpg');
+original_img = imread(url);
 
-image = imread('3.jpg');
-image = imsharpen(image, 'Amount',4)
-number=0;
-fudgeFactor = 0.9;
+convolver_map = [-1, -1, -1, -1,-1;-1, -1, -1, -1,-1;-1, -1, 23.8, -1,-1;-1, -1, -1, -1,-1;-1, -1, -1, -1,-1];
+image = imfilter(original_img, convolver_map, 'conv');
+fudgeFactor = 4;
 se90 = strel('line', 2, 90);
 se0 = strel('line', 1, 0);
-%Plane Trisection
+
 rmat = image(:,:,1);
 gmat = image(:,:,2);
 bmat = image(:,:,3);
-%% Apply sobel+Image Dilation+Filters on all RGB planes
+%% Apply canny+Image Dilation+Filters on all RGB planes
 
-%%rmat sobel
-[~, threshold] = edge(rmat, 'sobel');
-BWs = edge(rmat,'sobel', threshold * fudgeFactor);
+%%rmat canny
+[~, threshold] = edge(rmat, 'canny');
+BWs = edge(rmat,'canny', threshold * fudgeFactor);
 BWsdilr = imdilate(BWs, [se90 se0]);
-BWsdilr = medfilt2(BWsdilr);
-
 %figure, imshowpair(BWsdilr, BWs, 'montage'), title('dilated R gradient mask');
 
-%%gmat sobel
-[~, threshold] = edge(gmat, 'sobel');
-BWs = edge(gmat,'sobel', threshold * fudgeFactor);
+%%gmat canny
+[~, threshold] = edge(gmat, 'canny');
+BWs = edge(gmat,'canny', threshold * fudgeFactor);
 BWsdilg = imdilate(BWs, [se90 se0]);
-BWsdilg = medfilt2(BWsdilg);
-
 %figure, imshowpair(BWsdilg, BWs, 'montage'), title('dilated G gradient mask');
-%%bmat sobel
-[~, threshold] = edge(bmat, 'sobel');
-BWs = edge(bmat,'sobel', threshold * fudgeFactor);
-BWsdilb = imdilate(BWs, [se90 se0]);
-BWsdilb = medfilt2(BWsdilb);
 
+%%bmat canny
+[~, threshold] = edge(bmat, 'canny');
+BWs = edge(bmat,'canny', threshold * fudgeFactor);
+BWsdilb = imdilate(BWs, [se90 se0]);
 %figure, imshowpair(BWsdilb, BWs, 'montage'), title('dilated B gradient mask');
 
-%%view all
-%% Merge all dilated planes and count circles 
+%% Merge all dilated planes and count circles
 
 c=BWsdilr+BWsdilg+BWsdilb;
-c = im2bw(c);
-c=~c;
-[centers, radii] = imfindcircles(c,[40 80], 'ObjectPolarity','dark', ...
-          'Sensitivity',0.92,'Method','twostage');
-h = viscircles(centers,radii);
-disp(size(centers));
-number=number+length(centers);
-timeElapsed=toc; %Execution Time Calculation
-%FileCreation
-fileID = fopen('strawcounter.txt','w')
-fprintf(fileID,'The number of straws counted: %d \n',number);
-fprintf(fileID,'\nExecution Time in Program: %d \n',timeElapsed);
-fclose(fileID);
+c = ~c;
 
+detectCircles = @(x) imfindcircles(x,[10 25],'Sensitivity',0.84, 'EdgeThreshold',0.0, 'Method','PhaseCode', 'ObjectPolarity','Bright');
+[centers, radii, metric] = detectCircles(c);
+
+%% Mark circles on the image
+imshow(original_img);
+viscircles(centers, radii,'LineStyle','-.', 'LineWidth',1.0);
+
+for k = 1:length(metric)
+    
+    metricB1_string = sprintf('%d',k);
+    text(centers(k,1),centers(k,2),metricB1_string,'color','y','HorizontalAlignment', 'center','VerticalAlignment', 'middle');
+end
+number=length(centers);
+timeElapsed=toc; 
+%Execution Time Calculation
+%FileCreation
+fileID = fopen('log.txt','wt')
+fprintf(fileID,'Total Straws: %d \n',number);
+fprintf(fileID, '\nLatitude: %d, Longitude: %d', lat, lon);
+fprintf(fileID,'\nExecution Time in Program: %d seconds',timeElapsed);
+
+fclose(fileID);
